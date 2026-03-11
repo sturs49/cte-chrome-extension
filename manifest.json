@@ -1,0 +1,107 @@
+{
+  "manifest_version": 3,
+  "name": "Crypto Tax Edge \u2013 AI TX Classifier",
+  "version": "5.5.0",
+  "description": "AI-powered crypto transaction classification for Koinly, CoinTracker, TaxBit, Coinpanda, ZenLedger & more. Noves + Claude dual-source analysis.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://app.koinly.io/*",
+    "https://cointracker.io/*",
+    "https://app.cointracker.io/*",
+    "https://taxbit.com/*",
+    "https://app.taxbit.com/*",
+    "https://coinpanda.io/*",
+    "https://app.coinpanda.io/*",
+    "https://zenledger.io/*",
+    "https://app.zenledger.io/*",
+    "https://cryptotrader.tax/*",
+    "https://app.cryptotrader.tax/*",
+    "https://cointracking.info/*",
+    "https://app.breezing.io/*",
+    "https://breezing.io/*",
+    "https://cryptio.co/*",
+    "https://app.cryptio.co/*",
+    "https://cryptoworth.com/*",
+    "https://app.cryptoworth.com/*",
+    "https://tres.finance/*",
+    "https://app.tres.finance/*",
+    "https://tokentax.co/*",
+    "https://app.tokentax.co/*",
+    "https://divly.com/*",
+    "https://app.divly.com/*",
+    "https://accointing.com/*",
+    "https://app.accointing.com/*",
+    "https://koinx.com/*",
+    "https://app.koinx.com/*",
+    "https://eth.llamarpc.com/*",
+    "https://polygon.llamarpc.com/*",
+    "https://arbitrum.llamarpc.com/*",
+    "https://optimism.llamarpc.com/*",
+    "https://base.llamarpc.com/*",
+    "https://binance.llamarpc.com/*",
+    "https://dnhsufwdyhkwrsdtfgyx.supabase.co/*",
+    "https://*.supabase.co/*",
+    "https://app.cryptotaxedge.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.koinly.io/*",
+        "https://cointracker.io/*",
+        "https://app.cointracker.io/*",
+        "https://taxbit.com/*",
+        "https://app.taxbit.com/*",
+        "https://coinpanda.io/*",
+        "https://app.coinpanda.io/*",
+        "https://zenledger.io/*",
+        "https://app.zenledger.io/*",
+        "https://cryptotrader.tax/*",
+        "https://app.cryptotrader.tax/*",
+        "https://cointracking.info/*",
+        "https://app.breezing.io/*",
+        "https://breezing.io/*",
+        "https://cryptio.co/*",
+        "https://app.cryptio.co/*",
+        "https://cryptoworth.com/*",
+        "https://app.cryptoworth.com/*",
+        "https://tres.finance/*",
+        "https://app.tres.finance/*",
+        "https://tokentax.co/*",
+        "https://app.tokentax.co/*",
+        "https://divly.com/*",
+        "https://app.divly.com/*",
+        "https://accointing.com/*",
+        "https://app.accointing.com/*",
+        "https://koinx.com/*",
+        "https://app.koinx.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "overlay.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
