@@ -226,7 +226,7 @@
 #cte-analyze-btn:hover { opacity: 0.88; }
 
 /* ── Chain pills ──────────────────────────────────────────────────────────── */
-.cte-pills { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px; }
+.cte-pills { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px; max-height: 44px; overflow: hidden; }
 .cte-pill {
   font-size: 9px;
   padding: 2px 6px;
@@ -234,6 +234,13 @@
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 20px;
   color: var(--cte-muted);
+}
+.cte-pill-more {
+  background: rgba(0,212,184,0.08);
+  border-color: rgba(0,212,184,0.2);
+  color: #00d4b8;
+  font-weight: 600;
+  cursor: default;
 }
 
 /* ── Loading ──────────────────────────────────────────────────────────────── */

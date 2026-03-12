@@ -49,13 +49,18 @@
 
   // ── Chain metadata ───────────────────────────────────────────────────────
   const CHAIN_META = {
-    ethereum: { name: 'Ethereum', icon: '⟠', color: '#627EEA', explorer: 'https://etherscan.io/tx/' },
-    polygon:  { name: 'Polygon',  icon: '⬡', color: '#8247E5', explorer: 'https://polygonscan.com/tx/' },
-    base:     { name: 'Base',     icon: '🔵', color: '#0052FF', explorer: 'https://basescan.org/tx/' },
-    arbitrum: { name: 'Arbitrum', icon: '🔷', color: '#28A0F0', explorer: 'https://arbiscan.io/tx/' },
-    optimism: { name: 'Optimism', icon: '🔴', color: '#FF0420', explorer: 'https://optimistic.etherscan.io/tx/' },
-    bsc:      { name: 'BSC',      icon: '🟡', color: '#F3BA2F', explorer: 'https://bscscan.com/tx/' },
-    solana:   { name: 'Solana',   icon: '◎',  color: '#9945FF', explorer: 'https://solscan.io/tx/' },
+    ethereum:  { name: 'Ethereum',  icon: '⟠', color: '#627EEA', explorer: 'https://etherscan.io/tx/' },
+    polygon:   { name: 'Polygon',   icon: '⬡', color: '#8247E5', explorer: 'https://polygonscan.com/tx/' },
+    base:      { name: 'Base',      icon: '🔵', color: '#0052FF', explorer: 'https://basescan.org/tx/' },
+    arbitrum:  { name: 'Arbitrum',  icon: '🔷', color: '#28A0F0', explorer: 'https://arbiscan.io/tx/' },
+    optimism:  { name: 'Optimism',  icon: '🔴', color: '#FF0420', explorer: 'https://optimistic.etherscan.io/tx/' },
+    bsc:       { name: 'BSC',       icon: '🟡', color: '#F3BA2F', explorer: 'https://bscscan.com/tx/' },
+    avalanche: { name: 'Avalanche', icon: '🔺', color: '#E84142', explorer: 'https://snowtrace.io/tx/' },
+    zksync:    { name: 'zkSync',    icon: '⬠', color: '#8B8DFC', explorer: 'https://explorer.zksync.io/tx/' },
+    linea:     { name: 'Linea',     icon: '▰', color: '#61DFFF', explorer: 'https://lineascan.build/tx/' },
+    scroll:    { name: 'Scroll',    icon: '📜', color: '#FFEEDA', explorer: 'https://scrollscan.com/tx/' },
+    blast:     { name: 'Blast',     icon: '💥', color: '#FCFC03', explorer: 'https://blastscan.io/tx/' },
+    mantle:    { name: 'Mantle',    icon: '⬟', color: '#000000', explorer: 'https://mantlescan.xyz/tx/' },
   };
 
   const TYPE_META = {
@@ -254,16 +259,6 @@
       <!-- ③ Tax classification — single pill, no duplication -->
       ${taxPill ? `<div style="margin:7px 0">${taxPill}</div>` : ''}
 
-      <!-- ④ Confidence + source — one compact row -->
-      <div class="cte-conf-row">
-        <span class="cte-conf-label">Confidence</span>
-        <div class="cte-conf-bar-wrap">
-          <div class="cte-conf-fill" style="width:${confidence}%;background:${confColor}"></div>
-        </div>
-        <span class="cte-conf-num" style="color:${confColor}">${confidence}%</span>
-        <span class="cte-source-badge" style="background:${sourceBadge.bg};color:${sourceBadge.color};border-color:${sourceBadge.border}">${sourceBadge.label}</span>
-      </div>
-
       <!-- Koinly tag -->
       <div class="cte-koinly-box">
         <span class="cte-koinly-label">📌</span>
@@ -330,6 +325,16 @@
             </div>
             ${protocol ? `<div class="cte-action-protocol">via ${protocol}</div>` : ''}
           </div>
+        </div>
+
+        <!-- Confidence + source — right below classification -->
+        <div class="cte-conf-row">
+          <span class="cte-conf-label">Confidence</span>
+          <div class="cte-conf-bar-wrap">
+            <div class="cte-conf-fill" style="width:${confidence}%;background:${confColor}"></div>
+          </div>
+          <span class="cte-conf-num" style="color:${confColor}">${confidence}%</span>
+          <span class="cte-source-badge" style="background:${sourceBadge.bg};color:${sourceBadge.color};border-color:${sourceBadge.border}">${sourceBadge.label}</span>
         </div>
 
         ${detailSection}
@@ -473,7 +478,7 @@
         </div>
 
         <div class="cte-input-row">
-          <input id="cte-hash-input" type="text" placeholder="0x… or Solana signature" autocomplete="off" spellcheck="false" />
+          <input id="cte-hash-input" type="text" placeholder="0x… transaction hash" autocomplete="off" spellcheck="false" />
           <button id="cte-analyze-btn">Analyze</button>
         </div>
 
@@ -484,7 +489,8 @@
           <span class="cte-pill">🔷 ARB</span>
           <span class="cte-pill">🔴 OP</span>
           <span class="cte-pill">🟡 BSC</span>
-          <span class="cte-pill">◎ SOL</span>
+          <span class="cte-pill">🔺 AVAX</span>
+          <span class="cte-pill cte-pill-more" title="Also: zkSync, Linea, Scroll, Blast, Mantle">+5</span>
         </div>
 
         <div id="cte-result"></div>
@@ -526,7 +532,7 @@
       const hasHash = /0x[a-fA-F0-9]{40,}/.test(html)
                    || /href="[^"]*(?:scan\.com|scan\.io|etherscan|polygonscan|basescan|arbiscan|solscan)[^"]*\/tx\//.test(html);
       const hasTx  = /(Deposit|Send|Receive|Withdraw|Trade|Transfer|Swap)/i.test(text);
-      const hasAmt = /(MATIC|ETH|USDC|BTC|SOL|BNB|DAI|USDT)/i.test(text) || /[+\-]\s*[\d,]+(\.\d+)?/.test(text);
+      const hasAmt = /(MATIC|ETH|USDC|BTC|BNB|DAI|USDT|AVAX)/i.test(text) || /[+\-]\s*[\d,]+(\.\d+)?/.test(text);
       if (!hasHash || !hasTx || !hasAmt) return;
       const childQualifies = [...el.children].some(child => {
         const ch = child.innerHTML || '';

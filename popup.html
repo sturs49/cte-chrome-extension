@@ -317,6 +317,25 @@
       <div class="login-hint" style="margin-top:6px">No credit card · 25 free TX/month</div>
     </div>
 
+    <!-- Email verification panel (shown after signup) -->
+    <div id="ext-panel-verify" style="display:none">
+      <div style="text-align:center;padding:10px 0">
+        <div style="font-size:28px;margin-bottom:10px">📧</div>
+        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:8px">Check your email</div>
+        <div style="font-size:11px;color:#8892c4;line-height:1.6;margin-bottom:14px">
+          We sent a verification link to<br>
+          <span id="verify-email-display" style="color:var(--teal);font-weight:600"></span>
+        </div>
+        <div style="font-size:10px;color:#6b7280;line-height:1.5;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px;text-align:left;margin-bottom:14px">
+          <div style="margin-bottom:6px"><strong style="color:#e2e8f0">Step 1:</strong> Open the email from CryptoTaxEdge</div>
+          <div style="margin-bottom:6px"><strong style="color:#e2e8f0">Step 2:</strong> Click the "Confirm your email" link</div>
+          <div><strong style="color:#e2e8f0">Step 3:</strong> Come back here and sign in below</div>
+        </div>
+        <button class="login-btn" id="verify-signin-btn" style="margin-bottom:8px">I've verified — Sign In</button>
+        <div style="font-size:9px;color:#6b7280">Didn't get it? Check spam, or <a href="#" id="resend-verify-link" style="color:var(--teal)">resend email</a></div>
+      </div>
+    </div>
+
     <!-- Forgot password panel -->
     <div id="ext-panel-forgot" style="display:none">
       <div class="login-field">

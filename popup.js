@@ -1,4 +1,3 @@
-
   // ══════════════════════════════════════════
   // SUPABASE CONFIG
   // ══════════════════════════════════════════
@@ -61,6 +60,7 @@
     document.getElementById('ext-panel-login').style.display  = tab === 'login'  ? 'block' : 'none';
     document.getElementById('ext-panel-signup').style.display = tab === 'signup' ? 'block' : 'none';
     document.getElementById('ext-panel-forgot').style.display = 'none';
+    document.getElementById('ext-panel-verify').style.display = 'none';
     document.getElementById('ext-tab-login').classList.toggle('active',  tab === 'login');
     document.getElementById('ext-tab-signup').classList.toggle('active', tab === 'signup');
     clearExtMsgs();
@@ -100,7 +100,7 @@
     loadSettings();
   }
 
-  // ── Sign In (direct Supabase — matches web app) ───────────
+  // ── Sign In (direct Supabase) ─────────────────────────────
   function submitLogin() {
     var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
     var password = (document.getElementById('login-password').value || '').trim();
@@ -122,7 +122,6 @@
         showExtErr(res.data.error_description || res.data.error || 'Sign in failed.');
         return;
       }
-      // Fetch profile tier from Supabase
       fetch(SUPABASE_URL + '/rest/v1/profiles?select=email,tier&limit=1', {
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + res.data.access_token }
       })
@@ -133,7 +132,6 @@
         setLoggedIn(res.data.user.email || email, { tier: tier });
       })
       .catch(function() {
-        // Fall back to user_metadata tier if profiles fetch fails
         var meta = (res.data.user && res.data.user.user_metadata) || {};
         setLoggedIn(res.data.user.email || email, { tier: meta.tier || 'free' });
       });
@@ -144,7 +142,7 @@
     });
   }
 
-  // ── Sign Up (direct Supabase — matches web app) ───────────
+  // ── Sign Up — FIX: use redirectTo matching Supabase site URL ─
   function submitSignup() {
     var email = (document.getElementById('signup-email').value || '').trim().toLowerCase();
     var password = (document.getElementById('signup-password').value || '').trim();
@@ -154,37 +152,64 @@
     var btn = document.getElementById('signup-btn');
     btn.disabled = true; btn.textContent = 'Creating account…';
 
+    // POST to Supabase signup with redirectTo so confirmation link works
     fetch(SUPABASE_URL + '/auth/v1/signup', {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password })
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        options: {
+          emailRedirectTo: 'https://app.cryptotaxedge.com/auth/callback'
+        }
+      })
     })
-    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, status: r.status, data: d }; }); })
     .then(function(res) {
       btn.disabled = false; btn.textContent = 'Create Account';
-      if (!res.ok) {
-        showExtErr(res.data.error_description || res.data.error || 'Sign up failed.');
+
+      // Supabase returns 422 if email already registered
+      if (res.status === 422) {
+        showExtErr('An account with this email already exists. Please sign in.');
+        switchExtTab('login');
+        document.getElementById('login-email').value = email;
         return;
       }
+
+      if (!res.ok) {
+        var errMsg = res.data.error_description || res.data.msg || res.data.error || 'Sign up failed. Please try again.';
+        showExtErr(errMsg);
+        return;
+      }
+
       if (res.data.access_token) {
-        // Auto-confirmed (email confirm disabled in Supabase)
+        // Email confirmation disabled — auto-login
         chrome.storage.local.set({ cteAccessToken: res.data.access_token });
         var meta = (res.data.user && res.data.user.user_metadata) || {};
         setLoggedIn(res.data.user.email || email, { tier: meta.tier || 'free' });
       } else {
-        // Email confirmation required
-        showExtSuccess('Account created! Check your email to confirm, then sign in.');
-        switchExtTab('login');
+        // Confirmation email sent — show dedicated verification screen
+        clearExtMsgs();
+        document.getElementById('ext-panel-login').style.display = 'none';
+        document.getElementById('ext-panel-signup').style.display = 'none';
+        document.getElementById('ext-panel-forgot').style.display = 'none';
+        document.getElementById('ext-panel-verify').style.display = 'block';
+        document.getElementById('verify-email-display').textContent = email;
+        // Store email for easy sign-in after verify
         document.getElementById('login-email').value = email;
       }
     })
-    .catch(function() {
+    .catch(function(err) {
       btn.disabled = false; btn.textContent = 'Create Account';
+      console.error('[CTE] Signup error:', err);
       showExtErr('Network error. Check your connection.');
     });
   }
 
-  // ── Forgot password via Supabase SDK ──────────────────────
+  // ── Forgot password ────────────────────────────────────────
   function submitForgotPassword() {
     if (!sbClient) { showExtErr('Auth not configured.'); return; }
     var email = (document.getElementById('forgot-email').value || '').trim().toLowerCase();
@@ -342,7 +367,27 @@
     if (backLink)   backLink.addEventListener('click',   function(e) { e.preventDefault(); switchExtTab('login'); });
     if (signupLink) signupLink.addEventListener('click', function(e) { e.preventDefault(); switchExtTab('signup'); });
 
-    // Support Enter key on password fields
+    // Verification panel buttons
+    var verifySigninBtn = document.getElementById('verify-signin-btn');
+    var resendLink = document.getElementById('resend-verify-link');
+    if (verifySigninBtn) verifySigninBtn.addEventListener('click', function() {
+      document.getElementById('ext-panel-verify').style.display = 'none';
+      switchExtTab('login');
+    });
+    if (resendLink) resendLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      var email = document.getElementById('verify-email-display').textContent;
+      if (!email) return;
+      fetch(SUPABASE_URL + '/auth/v1/resend', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'signup', email: email })
+      }).then(function() {
+        resendLink.textContent = 'Sent!';
+        setTimeout(function() { resendLink.textContent = 'resend email'; }, 3000);
+      });
+    });
+
     var loginPw  = document.getElementById('login-password');
     var signupPw = document.getElementById('signup-password');
     if (loginPw)  loginPw.addEventListener('keydown',  function(e) { if (e.key === 'Enter') submitLogin(); });
